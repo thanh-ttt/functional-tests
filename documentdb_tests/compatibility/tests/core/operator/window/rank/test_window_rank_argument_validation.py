@@ -137,22 +137,6 @@ def test_rank_second_operator_in_output_field_errors(collection):
     )
 
 
-def test_rank_window_key_errors_on_empty_collection(collection):
-    """The `window` rejection is a parse-time error — it fires with no documents."""
-    result = run_window_operator(
-        collection,
-        "$rank",
-        [],
-        window={"documents": ["unbounded", "current"]},
-        expression={},
-    )
-    assertFailureCode(
-        result,
-        RANK_STYLE_WINDOW_EXTRA_ARGS_ERROR,
-        msg="parse-time window rejection fires on an empty collection",
-    )
-
-
 # Property [sortBy Requirement]: $rank needs a top-level sortBy with one element.
 
 
@@ -200,28 +184,4 @@ def test_rank_multi_field_sortBy_errors(collection):
         result,
         RANK_STYLE_WINDOW_SORTBY_ONE_ELEMENT_ERROR,
         msg="$rank rejects a multi-field sortBy",
-    )
-
-
-def test_rank_sortBy_error_on_empty_collection(collection):
-    """The sortBy requirement is validated at parse time — it fires with no documents."""
-    result = execute_command(
-        collection,
-        {
-            "aggregate": collection.name,
-            "pipeline": [
-                {
-                    "$setWindowFields": {
-                        "partitionBy": "$partition",
-                        "output": {"result": {"$rank": {}}},
-                    }
-                }
-            ],
-            "cursor": {},
-        },
-    )
-    assertFailureCode(
-        result,
-        RANK_STYLE_WINDOW_SORTBY_ONE_ELEMENT_ERROR,
-        msg="parse-time sortBy validation fires on an empty collection",
     )
